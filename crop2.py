@@ -72,7 +72,7 @@ def cropping(img_path,img_crop_path,img_patch_path,datasize):
                 location = (w_c[each_batch], h_c[each_batch])  # 放置位置在右下
                 target.paste(img_4, location)
 
-        target.save(os.path.join(img_patch_path, imgList[each_batch * 4]))
+        target.save(os.path.join(img_patch_path, imgList[each_batch]))
 
 
 if __name__ == '__main__':
