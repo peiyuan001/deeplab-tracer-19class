@@ -17,7 +17,7 @@ def random_int_list(start, stop, length, seed=0):
 
 def cropping(img_path,img_crop_path,img_patch_path,datasize):
     Bat = int(datasize / 4)
-    files = os.listdir(img_path)
+    # files = os.listdir(img_path)
     # files.sort()
     imgList = os.listdir(img_path)  # 得到1文件下所指文件内的图片
     # imgList.sort(key=lambda x: int(x.split('.')[0]))  # 按照数字顺序排列图片名
@@ -30,7 +30,7 @@ def cropping(img_path,img_crop_path,img_patch_path,datasize):
     # h_c = int(np.round(h * np.random.beta(alpha, beta)))
     w_c = random_int_list(1, w-1, Bat, 0)
     h_c = random_int_list(1, h-1, Bat, 0)
-    r_Index = random_int_list(1, len(imgList), len(imgList),0)
+    r_Index = random_int_list(1, len(imgList), len(imgList),0) #pick img randomly
     for each_batch in range(Bat):  # 遍历，进行批量转
         # Read img
         print('Processing batch:', each_batch, ': image', each_batch * 4, '-', each_batch * 4 + 3)
@@ -76,10 +76,10 @@ def cropping(img_path,img_crop_path,img_patch_path,datasize):
 
 
 if __name__ == '__main__':
-    alpha = 2
-    beta = 2
+    # alpha = 2
+    # beta = 2
     img_path = os.path.join(os.getcwd(), 'datasets', 'GTA5', 'images')
-    imgList = os.listdir(img_path)  # 得到1文件下所指文件内的图
+    # imgList = os.listdir(img_path)  # 得到1文件下所指文件内的图
     img_crop_path = os.path.join(os.getcwd(), 'datasets', 'GTA5', 'crop_images')
     img_patch_path = os.path.join(os.getcwd(), 'datasets', 'GTA5', 'patch_images')
     label_path = os.path.join(os.getcwd(), 'datasets', 'GTA5', 'labels')
