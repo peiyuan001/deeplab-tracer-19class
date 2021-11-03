@@ -14,23 +14,38 @@ def random_int_list(start, stop, length, seed=0):
         random_list.append(random.randint(start, stop))
     return random_list
 
+def random_beta_int_list(start, stop, length, alpha=2, beta=2, seed=0):
+    np.random.seed(seed)
+    random_list = []
+    start, stop = (int(start), int(stop)) if start <= stop else (int(stop), int(start))
+    ran= stop-start
+    size=[int(length)]
+    temp_list =np.random.beta(alpha, beta, size)
+    for index in range(length):
+        random_list.append(int(start + ran * temp_list[index]))
+    return random_list
 
-def cropping(img_path,img_crop_path,img_patch_path,datasize):
+def cropping(img_path, img_crop_path, img_patch_path, datasize, mode='normal', sd = 0, a=2, b=2): #sd:seed
     Bat = int(datasize / 4)
-    # files = os.listdir(img_path)
-    # files.sort()
     imgList = os.listdir(img_path)  # 得到1文件下所指文件内的图片
-    # imgList.sort(key=lambda x: int(x.split('.')[0]))  # 按照数字顺序排列图片名
     print('img list:', imgList)
     dir_test = os.path.join(img_path, imgList[1])
     image_test = Image.open(dir_test).convert('RGB')
     w = image_test.size[0]  # 获取图片宽度
     h = image_test.size[1]  # 获取图片高度
-    # w_c = int(np.round(w * np.random.beta(alpha, beta)))
-    # h_c = int(np.round(h * np.random.beta(alpha, beta)))
-    w_c = random_int_list(1, w-1, Bat, 0)
-    h_c = random_int_list(1, h-1, Bat, 0)
-    r_Index = random_int_list(1, len(imgList), len(imgList),0) #pick img randomly
+    # pick img randomly
+    if mode == 'normal':
+        w_c = random_int_list(1, w-1, Bat, seed=0)
+        h_c = random_int_list(1, h - 1, Bat, seed=0)
+        r_Index = random_int_list(1, len(imgList), len(imgList), seed=sd)
+    elif mode == 'beta':
+        w_c = random_beta_int_list(1, w - 1, Bat, alpha=a, beta=b, seed=0)
+        h_c = random_beta_int_list(1, h - 1, Bat, alpha=a, beta=b, seed=0)
+        r_Index = random_beta_int_list(1, len(imgList), len(imgList), alpha=a, beta=b, seed=sd)
+    else:
+        print('Unknown node')
+        return
+
     for each_batch in range(Bat):  # 遍历，进行批量转
         # Read img
         print('Processing batch:', each_batch, ': image', each_batch * 4, '-', each_batch * 4 + 3)
@@ -45,16 +60,16 @@ def cropping(img_path,img_crop_path,img_patch_path,datasize):
         image_4r = Image.open(dir_4).convert('RGB')
 
         img_1 = image_1r.crop([0, 0, w_c[each_batch], h_c[each_batch]])  # 获取左上1/4的图片
-        img_1.save(os.path.join(img_crop_path, imgList[r_Index[each_batch * 4]]))
+        #img_1.save(os.path.join(img_crop_path, imgList[r_Index[each_batch * 4]]))
 
         img_2 = image_2r.crop([w_c[each_batch], 0, w, h_c[each_batch]])  # 获得右上1/4的图片
-        img_2.save(os.path.join(img_crop_path, imgList[r_Index[each_batch * 4 + 1]]))
+        #img_2.save(os.path.join(img_crop_path, imgList[r_Index[each_batch * 4 + 1]]))
 
         img_3 = image_3r.crop([0, h_c[each_batch], w_c[each_batch], h])  # 获取左下1/4的图片
-        img_3.save(os.path.join(img_crop_path, imgList[r_Index[each_batch * 4 + 2]]))
+        #img_3.save(os.path.join(img_crop_path, imgList[r_Index[each_batch * 4 + 2]]))
 
         img_4 = image_4r.crop([w_c[each_batch], h_c[each_batch], w, h])  # 获取右下1/4的图片
-        img_4.save(os.path.join(img_crop_path, imgList[r_Index[each_batch * 4 + 3]]))
+        #img_4.save(os.path.join(img_crop_path, imgList[r_Index[each_batch * 4 + 3]]))
 
         # 4个图像拼接成一个
         target = Image.new('RGB', (w, h))  # 首先创建一块背景布
@@ -76,15 +91,16 @@ def cropping(img_path,img_crop_path,img_patch_path,datasize):
 
 
 if __name__ == '__main__':
-    # alpha = 2
-    # beta = 2
     img_path = os.path.join(os.getcwd(), 'datasets', 'GTA5', 'images')
-    # imgList = os.listdir(img_path)  # 得到1文件下所指文件内的图
     img_crop_path = os.path.join(os.getcwd(), 'datasets', 'GTA5', 'crop_images')
     img_patch_path = os.path.join(os.getcwd(), 'datasets', 'GTA5', 'patch_images')
     label_path = os.path.join(os.getcwd(), 'datasets', 'GTA5', 'labels')
     label_crop_path = os.path.join(os.getcwd(), 'datasets', 'GTA5', 'crop_labels')
     label_patch_path = os.path.join(os.getcwd(), 'datasets', 'GTA5', 'patch_labels')
-    cropping(img_path, img_crop_path, img_patch_path, 5000)
-    cropping(label_path, label_crop_path, label_patch_path, 5000)
-    # os.remove(img_path + first_name + '.jpg')  # 图片被分割4等分之后，删除原图片
+    alpha = 2
+    beta = 2
+    seed = 0
+    # cropping(img_path, img_crop_path, img_patch_path, 5000, sd=seed)
+    # cropping(label_path, label_crop_path, label_patch_path, 5000, sd=seed)
+    cropping(img_path, img_crop_path, img_patch_path, 5000, mode='beta', sd=seed, a=alpha, b=beta)
+    cropping(label_path, label_crop_path, label_patch_path, 5000, mode='beta', sd=seed, a=alpha, b=beta)
